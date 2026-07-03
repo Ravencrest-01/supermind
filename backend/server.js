@@ -101,6 +101,12 @@ app.post('/api/chat', async (req, res) => {
   // Auto-title from the first user message.
   if (convo.messages.length === 0 && message) {
     convo.title = message.slice(0, 40) + (message.length > 40 ? '…' : '');
+    
+    // Check for "load <tag>" command
+    const loadMatch = message.match(/^load\s+(.+)$/i);
+    if (loadMatch) {
+      convo.activeMemoryTag = loadMatch[1].trim().toLowerCase();
+    }
   }
 
   const userMsg = { role: 'user', content: message || '', at: Date.now() };
@@ -111,7 +117,7 @@ app.post('/api/chat', async (req, res) => {
   convo.messages.push(userMsg);
 
   // Build the payload: core memory as system prompt + rolling window.
-  const coreMemory = await readCoreMemory();
+  const coreMemory = await readCoreMemory(convo.activeMemoryTag);
   const systemPrompt =
     `You are a synchronized extension of the user's mind — their private "Supermind". ` +
     `Use the following Core Memory to ground your awareness. Be concise and direct.\n\n` +

@@ -31,12 +31,48 @@ export async function ensureVault() {
 }
 
 // Permanent context injected as the system prompt.
-export async function readCoreMemory() {
+export async function readCoreMemory(activeTag) {
+  let coreText = '';
   try {
-    return await fs.readFile(memoryPath(), 'utf8');
+    coreText = await fs.readFile(memoryPath(), 'utf8');
   } catch {
-    return '';
+    coreText = '';
   }
+
+  if (config.memoryEnabled && activeTag) {
+    try {
+      const files = await fs.readdir(memoriesDir());
+      const mdFiles = files.filter(f => f.endsWith('.md'));
+      
+      const matchedNodes = [];
+      const searchTag = activeTag.toLowerCase();
+
+      for (const file of mdFiles) {
+        try {
+          const content = await fs.readFile(path.join(memoriesDir(), file), 'utf8');
+          if (file.toLowerCase().includes(searchTag) || content.toLowerCase().includes(searchTag)) {
+            matchedNodes.push({ title: file.replace('.md', ''), content });
+            if (matchedNodes.length >= 10) break; // hard cap at 10 to protect context
+          }
+        } catch (e) {
+          // ignore read errors
+        }
+      }
+
+      if (matchedNodes.length > 0) {
+        coreText += `\n\n## Targeted Supermemory Nodes (Keyword: "${activeTag}"):\n`;
+        coreText += `The user requested to load the following specific memory nodes. Use them as the primary context for this conversation.\n\n`;
+
+        for (const node of matchedNodes) {
+          coreText += `--- MEMORY NODE: ${node.title} ---\n${node.content}\n\n`;
+        }
+      }
+    } catch (e) {
+      // Memories dir doesn't exist yet, ignore
+    }
+  }
+
+  return coreText;
 }
 
 // ── Conversation storage ───────────────────────────────────────
