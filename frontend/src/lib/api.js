@@ -1,7 +1,11 @@
 import { BACKEND_URL, SUPERMIND_KEY } from './config.js';
 
 function headers(extra = {}) {
-  const h = { 'Content-Type': 'application/json', ...extra };
+  const h = { 
+    'Content-Type': 'application/json', 
+    'ngrok-skip-browser-warning': 'true',
+    ...extra 
+  };
   if (SUPERMIND_KEY) h['x-supermind-key'] = SUPERMIND_KEY;
   return h;
 }
