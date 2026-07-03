@@ -27,6 +27,7 @@ app.use(
       if (config.allowedOrigins.includes(origin)) return cb(null, true);
       cb(new Error(`Origin ${origin} not allowed by CORS`));
     },
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-supermind-key', 'ngrok-skip-browser-warning'],
   })
 );
 
