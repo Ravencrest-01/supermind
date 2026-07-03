@@ -1,0 +1,3 @@
+{
+  "rewrites": [{ "source": "/((?!api|icons|assets|manifest.webmanifest|sw.js|registerSW.js).*)", "destination": "/index.html" }]
+}
