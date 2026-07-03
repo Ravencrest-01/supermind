@@ -91,3 +91,53 @@ export async function streamChat({ model, messages, onToken, onSwap, signal }) {
   }
   return full;
 }
+
+// ── Non-streaming single completion (memory / finalize) ────────
+// Set `format:'json'` to force JSON mode. Low temp for determinism.
+export async function chatOnce({ model, messages, format, temperature = 0.2, signal }) {
+  const res = await fetch(`${config.ollamaUrl}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages,
+      stream: false,
+      ...(format ? { format } : {}),
+      options: { num_ctx: config.numCtx, temperature },
+    }),
+    signal: signal ?? AbortSignal.timeout(60_000),
+  });
+  if (!res.ok) throw new Error(`Ollama chatOnce ${res.status}: ${await res.text().catch(() => '')}`);
+  const data = await res.json();
+  return data.message?.content || '';
+}
+
+// ── Embeddings ─────────────────────────────────────────────────
+// Handles both the newer /api/embed and legacy /api/embeddings.
+// Returns a single vector (number[]) or throws.
+export async function embed(text, { signal } = {}) {
+  // Prefer /api/embed (input + embeddings[]).
+  let res = await fetch(`${config.ollamaUrl}/api/embed`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: config.models.embed, input: text, keep_alive: '30s' }),
+    signal: signal ?? AbortSignal.timeout(30_000),
+  }).catch(() => null);
+
+  if (res && res.ok) {
+    const data = await res.json();
+    const v = data.embeddings?.[0] || data.embedding;
+    if (Array.isArray(v)) return v;
+  }
+  // Fallback: legacy /api/embeddings (prompt + embedding).
+  res = await fetch(`${config.ollamaUrl}/api/embeddings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: config.models.embed, prompt: text, keep_alive: '30s' }),
+    signal: signal ?? AbortSignal.timeout(30_000),
+  });
+  if (!res.ok) throw new Error(`Ollama embed ${res.status}: ${await res.text().catch(() => '')}`);
+  const data = await res.json();
+  if (!Array.isArray(data.embedding)) throw new Error('embed: no vector returned');
+  return data.embedding;
+}

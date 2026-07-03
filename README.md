@@ -53,6 +53,14 @@ Open `.env` and set at minimum:
 - `ALLOWED_ORIGINS` → your frontend origin(s), e.g.
   `http://localhost:5173,https://supermind.ravencrest.space`
 
+Pull the models (once), including the new embedder used for semantic recall:
+
+```bash
+ollama pull qwen2.5:7b
+ollama pull qwen2.5vl:3b
+ollama pull nomic-embed-text   # semantic vault retrieval
+```
+
 Then run it:
 
 ```bash
@@ -134,6 +142,36 @@ The **Regenerate** action re-runs the last reply; **Copy** is on every message a
 > back to a simpler note), but with Qwen running you get cleaner titles, tags, and concept
 > links. Toggle the whole feature with `MEMORY_ENABLED`.
 
+### Automatic super-memory (semantic retrieval + graph growth)
+
+Two automations run without you invoking anything:
+
+**On the first message of a chat (retrieval).** The backend embeds your message with
+`nomic-embed-text`, cosine-searches every note in your vault, and pulls the top matches
+**plus their 1-hop linked neighbors** from the graph. That bundle is injected as
+`<vault_context>` so the model is grounded in your relevant history from message one — no
+`load` command needed. The embedding index lives in `.supermind-index/` and only re-embeds
+files that changed. Tune with `RETRIEVAL_*` in `.env`; force a rebuild with
+`POST /api/reindex`.
+
+> `load <keyword>` still works as a manual override — it bypasses semantic search and injects
+> notes matching that keyword instead.
+
+**When a chat goes idle (finalization).** A server-side sweep (every `FINALIZE_SWEEP_MIN`
+minutes) finalizes any chat idle longer than `FINALIZE_INACTIVITY_MIN`. It runs two small,
+constrained model calls:
+
+1. **Classify** the chat into exactly one tag from a closed list (`TOPIC_TAGS`) — a fixed
+   vocabulary so your master files never fragment into `#tech`/`#Tech`/`#technology`.
+2. **Summarize** it into 3–5 bullets, wrapping key concepts in `[[wikilinks]]`.
+
+The bullets are appended, timestamped and backlinked to the source chat, to
+`Supermind/Topics/<tag>.md` — so your knowledge graph grows on its own. Browsers give no
+reliable "chat closed" event, so this is server-driven; to finalize instantly (e.g. on "New
+Chat"), call `POST /api/conversations/:id/finalize`.
+
+New endpoints: `POST /api/conversations/:id/finalize`, `GET /api/index`, `POST /api/reindex`.
+
 ---
 
 ## 6. Full variable reference
@@ -161,14 +199,27 @@ The **Regenerate** action re-runs the last reply; **Copy** is on every message a
 | `TEXT_MODEL` | Text model id | `qwen2.5:7b` |
 | `VISION_MODEL` | Vision model id | `richardyoung/smolvlm2-2.2b-instruct` |
 | `NUM_CTX` | Context window (keep 4096 for 6GB VRAM) | `4096` |
-| `MEMORY_ENABLED` | Turn the supermemory feature on/off | `true` |
+| `EMBED_MODEL` | Embedder for semantic retrieval | `nomic-embed-text` |
+| `MEMORY_ENABLED` | Turn the "remember this" feature on/off | `true` |
+| `RETRIEVAL_ENABLED` | Semantic chat-init retrieval on/off | `true` |
+| `RETRIEVAL_TOP_K` | Notes pulled per chat | `6` |
+| `RETRIEVAL_NEIGHBORS` | Linked notes expanded per hit | `2` |
+| `RETRIEVAL_MAX_CHARS` | Hard cap on injected context | `3200` |
+| `RETRIEVAL_CHUNK_CHARS` | Note chunk size for embedding | `1600` |
+| `RETRIEVAL_MIN_SCORE` | Cosine floor to include a note | `0.35` |
+| `FINALIZE_ENABLED` | Auto tag+summary on idle on/off | `true` |
+| `FINALIZE_INACTIVITY_MIN` | Idle minutes before finalizing | `15` |
+| `FINALIZE_SWEEP_MIN` | How often the sweep runs | `3` |
+| `TOPIC_TAGS` | Closed tag vocabulary | `tech,lifestyle,language,work,health,finance,ideas,misc` |
 | `AUTH_TOKEN` | Optional shared secret | *(blank)* |
 | `MEMORY_FILE` | Core memory file name | `Supermind_Memory.md` |
 | `DAILY_LOG_FILE` | Daily log file name | `Chat_Log_Daily.md` |
 | `CHATS_DIR` | Conversations subfolder | `Supermind_Chats` |
 | `COLLECTIONS_DIR` | Where uploaded images are stored | `Collections` |
-| `MEMORIES_DIR` | Where supermemory notes are written | `Supermind/Memories` |
+| `MEMORIES_DIR` | Where "remember this" notes are written | `Supermind/Memories` |
 | `MEMORY_HUB` | The graph hub note | `Supermind/Supermind Memory.md` |
+| `TOPICS_DIR` | Per-tag master files (finalization) | `Supermind/Topics` |
+| `INDEX_DIR` | Embedding cache (hidden) | `.supermind-index` |
 
 **Minimum you must change to go live:** backend `VAULT_PATH` + `ALLOWED_ORIGINS`,
 and frontend `VITE_BACKEND_URL`. Everything else has working defaults.
