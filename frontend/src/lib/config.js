@@ -26,8 +26,8 @@ export const MODELS = [
     vision: false,
   },
   {
-    id: env.VITE_VISION_MODEL || 'llama3.2-vision',
-    label: 'Llama 3.2 Vision',
+    id: env.VITE_VISION_MODEL || 'qwen2.5vl:3b',
+    label: 'Qwen 2.5 VL 3B',
     role: 'Multimodal vision',
     vision: true,
   },
