@@ -7,9 +7,14 @@ const chatsDir = () => path.join(config.vaultPath, config.files.chatsDir);
 const memoryPath = () => path.join(config.vaultPath, config.files.memory);
 const dailyLogPath = () => path.join(config.vaultPath, config.files.dailyLog);
 
+const collectionsDir = () => path.join(config.vaultPath, config.files.collectionsDir);
+const memoriesDir = () => path.join(config.vaultPath, config.files.memoriesDir);
+
 // Make sure the vault + chats folder + seed files exist on boot.
 export async function ensureVault() {
   await fs.mkdir(chatsDir(), { recursive: true });
+  await fs.mkdir(collectionsDir(), { recursive: true });
+  await fs.mkdir(memoriesDir(), { recursive: true });
   if (!fssync.existsSync(memoryPath())) {
     await fs.writeFile(
       memoryPath(),
@@ -89,6 +94,21 @@ export async function deleteConversation(id) {
   await Promise.allSettled([fs.rm(jsonPath(id)), fs.rm(mdPath(id))]);
 }
 
+export async function saveImages(imagesBase64) {
+  if (!imagesBase64 || imagesBase64.length === 0) return [];
+  await ensureVault();
+  const savedPaths = [];
+  for (const b64 of imagesBase64) {
+    const id = newId();
+    const filename = `${id}.png`;
+    const fullPath = path.join(collectionsDir(), filename);
+    const buffer = Buffer.from(b64, 'base64');
+    await fs.writeFile(fullPath, buffer);
+    savedPaths.push(filename);
+  }
+  return savedPaths;
+}
+
 function renderMarkdown(convo) {
   const lines = [
     `---`,
@@ -106,7 +126,9 @@ function renderMarkdown(convo) {
     const who = m.role === 'user' ? '🧑 You' : '🧠 Supermind';
     const stamp = m.at ? ` · ${new Date(m.at).toLocaleString()}` : '';
     lines.push(`**${who}**${stamp}`);
-    if (m.images?.length) lines.push(`_[${m.images.length} image(s) attached]_`);
+    if (m.imagePaths?.length) {
+      lines.push(m.imagePaths.map(p => `![[${config.files.collectionsDir}/${p}]]`).join('\n'));
+    }
     lines.push('', m.content || '', '');
   }
   return lines.join('\n');

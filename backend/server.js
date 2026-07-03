@@ -10,7 +10,9 @@ import {
   deleteConversation,
   appendDailyLog,
   newId,
+  saveImages,
 } from './lib/vault.js';
+import { extractMemory } from './lib/memory.js';
 import { streamChat, nodeStatus } from './lib/ollama.js';
 
 const app = express();
@@ -101,7 +103,10 @@ app.post('/api/chat', async (req, res) => {
   }
 
   const userMsg = { role: 'user', content: message || '', at: Date.now() };
-  if (images?.length) userMsg.images = images;
+  if (images?.length) {
+    userMsg.images = images;
+    userMsg.imagePaths = await saveImages(images);
+  }
   convo.messages.push(userMsg);
 
   // Build the payload: core memory as system prompt + rolling window.
@@ -146,6 +151,9 @@ app.post('/api/chat', async (req, res) => {
     convo.messages.push(assistantMsg);
     await saveConversation(convo);
     await appendDailyLog(convo, userMsg, assistantMsg);
+
+    // Run Supermemory extraction asynchronously
+    extractMemory(convo, userMsg).catch(console.error);
 
     send('done', { conversationId: convo.id, title: convo.title });
     res.end();

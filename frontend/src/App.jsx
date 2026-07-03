@@ -109,8 +109,11 @@ export default function App() {
           setSwapping(false);
           setMessages((prev) => {
             const next = [...prev];
-            const last = next[next.length - 1];
-            if (last?.role === 'assistant') last.content += t;
+            const lastIndex = next.length - 1;
+            const last = next[lastIndex];
+            if (last?.role === 'assistant') {
+              next[lastIndex] = { ...last, content: last.content + t };
+            }
             return next;
           });
         },

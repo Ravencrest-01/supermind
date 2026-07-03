@@ -53,7 +53,12 @@ export const config = {
     memory: process.env.MEMORY_FILE || 'Supermind_Memory.md',
     dailyLog: process.env.DAILY_LOG_FILE || 'Chat_Log_Daily.md',
     chatsDir: process.env.CHATS_DIR || 'Supermind_Chats',
+    collectionsDir: process.env.COLLECTIONS_DIR || 'Collections',
+    memoriesDir: process.env.MEMORIES_DIR || 'Supermind/Memories',
+    memoryHub: process.env.MEMORY_HUB || 'Supermind/Supermind Memory.md',
   },
+  
+  memoryEnabled: process.env.MEMORY_ENABLED !== 'false',
 
   // Optional shared secret. If set, the frontend must send the same
   // value as `x-supermind-key` header. Leave blank to disable
