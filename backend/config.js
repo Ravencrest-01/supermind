@@ -46,7 +46,7 @@ export const config = {
   // Model identifiers as they appear in `ollama list`.
   models: {
     text: process.env.TEXT_MODEL || 'qwen2.5:7b',
-    vision: process.env.VISION_MODEL || 'qwen2.5vl:3b',
+    vision: process.env.VISION_MODEL || 'huihui_ai/qwen3.5-abliterated:4B',
     // Small, fast embedder for semantic vault retrieval. Pull with:
     //   ollama pull nomic-embed-text
     embed: process.env.EMBED_MODEL || 'nomic-embed-text',

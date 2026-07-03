@@ -26,11 +26,10 @@ export const MODELS = [
     vision: false,
   },
   {
-    id: env.VITE_VISION_MODEL || 'qwen2.5vl:3b',
-    label: 'Qwen 2.5 VL 3B',
-    role: 'Multimodal vision',
-    vision: true,
-    disabled: true,
+    id: 'huihui_ai/qwen3.5-abliterated:4B',
+    label: 'Qwen 3.5 Abliterated 4B',
+    role: 'Uncensored text logic',
+    vision: false,
   },
 ];
 
