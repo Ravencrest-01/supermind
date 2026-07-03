@@ -4,6 +4,7 @@ import { fileToBase64 } from '../lib/api.js';
 export default function Composer({ onSend, onStop, busy, visionEnabled }) {
   const [text, setText] = useState('');
   const [images, setImages] = useState([]); // base64 strings
+  const [rememberActive, setRememberActive] = useState(false);
   const taRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -21,8 +22,14 @@ export default function Composer({ onSend, onStop, busy, visionEnabled }) {
 
   const send = () => {
     if (busy) return;
-    const t = text.trim();
+    let t = text.trim();
     if (!t && images.length === 0) return;
+    
+    if (rememberActive) {
+      t = `Remember this:\n${t}`;
+      setRememberActive(false);
+    }
+    
     onSend(t, images);
     setText('');
     setImages([]);
@@ -49,6 +56,16 @@ export default function Composer({ onSend, onStop, busy, visionEnabled }) {
         </div>
       )}
       <div className="composer__bar">
+        <button
+          className={`iconbtn ${rememberActive ? 'active' : ''}`}
+          title="Mark as important (creates a memory node)"
+          onClick={() => setRememberActive(!rememberActive)}
+          style={{ color: rememberActive ? '#facc15' : 'inherit' }}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill={rememberActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </button>
         {visionEnabled && (
           <>
             <button
