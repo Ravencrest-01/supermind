@@ -1,6 +1,10 @@
-import 'dotenv/config';
+import * as dotenv from 'dotenv';
 import path from 'node:path';
 import os from 'node:os';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // ─────────────────────────────────────────────────────────────
 //  SUPERMIND BACKEND CONFIG
