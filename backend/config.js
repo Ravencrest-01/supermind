@@ -42,7 +42,7 @@ export const config = {
   // Model identifiers as they appear in `ollama list`.
   models: {
     text: process.env.TEXT_MODEL || 'qwen2.5:7b',
-    vision: process.env.VISION_MODEL || 'richardyoung/smolvlm2-2.2b-instruct',
+    vision: process.env.VISION_MODEL || 'llama3.2-vision',
   },
 
   // Context window. Locked to 4096 to respect the 6GB VRAM ceiling.

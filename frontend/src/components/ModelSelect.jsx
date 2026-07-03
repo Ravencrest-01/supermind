@@ -1,33 +1,46 @@
+import { Listbox } from '@headlessui/react';
 import { MODELS } from '../lib/config.js';
-import './ModelSelect.css';
 
 export default function ModelSelect({ model, onModelChange, status, disabled }) {
   const active = MODELS.find((m) => m.id === model) || MODELS[0];
   const installed = status?.installed || [];
 
   return (
-    <div className="model-select-wrapper">
-      <select
-        className="model-select-native"
-        value={model}
-        disabled={disabled}
-        onChange={(e) => onModelChange(e.target.value)}
-      >
-        {MODELS.map((m) => {
-          const present = installed.some((n) => n === m.id || n.startsWith(m.id.split(':')[0]));
-          const label = `${m.label} ${present ? '' : '(Not Pulled)'}`;
-          return (
-            <option key={m.id} value={m.id}>
-              {label}
-            </option>
-          );
-        })}
-      </select>
-      <div className="model-select-display" aria-hidden="true">
-        <span className="model-select-name">{active.label}</span>
-        <span className="model-select-role">{active.role}</span>
-        <span className="chev">▾</span>
-      </div>
+    <div className="picker">
+      <Listbox value={model} onChange={onModelChange} disabled={disabled}>
+        {({ open }) => (
+          <>
+            <Listbox.Button className="picker__btn">
+              <span className="picker__name">{active.label}</span>
+              <span className="picker__role">{active.role}</span>
+              <span className={`chev ${open ? 'chev--up' : ''}`}>▾</span>
+            </Listbox.Button>
+
+            {open && (
+              <Listbox.Options static as="div" className="picker__menu">
+                {MODELS.map((m) => {
+                  const present = installed.some((n) => n === m.id || n.startsWith(m.id.split(':')[0]));
+                  return (
+                    <Listbox.Option key={m.id} value={m.id} as="button" className={({ active, selected }) => `picker__opt ${selected ? 'picker__opt--on' : ''} ${active && !selected ? 'picker__opt--active' : ''}`}>
+                      {({ selected, active }) => (
+                        <>
+                          <div style={{ textAlign: 'left' }}>
+                            <div className="picker__opt-name">{m.label}</div>
+                            <div className="picker__opt-role">{m.role}</div>
+                          </div>
+                          <span className={`tag ${present ? 'tag--ok' : 'tag--miss'}`}>
+                            {present ? 'ready' : 'not pulled'}
+                          </span>
+                        </>
+                      )}
+                    </Listbox.Option>
+                  );
+                })}
+              </Listbox.Options>
+            )}
+          </>
+        )}
+      </Listbox>
     </div>
   );
 }

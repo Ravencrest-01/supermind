@@ -1,20 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --bg: #131313;
-  --surface: #1c1b1b;
-  --surface-2: #353534;
-  --line: #353534;
-  --line-soft: #353534;
-  --text: #e5e2e1;
-  --muted: #aa8986;
-  --muted-2: #e2beba;
-  --accent: #ffb4ac;          /* primary */
-  --accent-soft: rgba(255, 180, 172, 0.14);
-  --accent-line: rgba(255, 180, 172, 0.35);
-  --live: #10b981;            /* emerald-500 */
-  --warn: #e9c400;            /* tertiary */
-  --danger: #ffb4ab;          /* error */
+  --bg: #000000;
+  --surface: #111111;
+  --surface-2: #222222;
+  --line: #333333;
+  --line-soft: #222222;
+  --text: #ffffff;
+  --muted: #a0a0a0;
+  --muted-2: #666666;
+  --accent: #B22222;          /* primary */
+  --accent-soft: rgba(178, 34, 34, 0.15);
+  --accent-line: rgba(178, 34, 34, 0.4);
+  --live: #10b981;
+  --warn: #e9c400;
+  --danger: #ef4444;
   --font-display: 'Geist', sans-serif;
   --font-body: 'Geist', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -133,7 +133,7 @@ body {
   height: 56px; flex: none;
   display: flex; align-items: center; gap: 12px;
   padding: 0 16px; border-bottom: 1px solid var(--line);
-  background: rgba(14, 17, 22, 0.7); backdrop-filter: blur(8px);
+  background: var(--bg);
 }
 .hamburger { display: none; flex-direction: column; gap: 4px; background: none; border: none; cursor: pointer; padding: 6px; }
 .hamburger span { width: 18px; height: 2px; background: var(--muted); border-radius: 2px; }
@@ -161,7 +161,7 @@ body {
   gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer;
   background: none; border: none; color: var(--text); text-align: left;
 }
-.picker__opt:hover { background: var(--surface-2); }
+.picker__opt--active { background: var(--surface-2); }
 .picker__opt--on { background: var(--accent-soft); }
 .picker__opt-name { font-size: 13.5px; font-weight: 500; }
 .picker__opt-role { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted-2); }

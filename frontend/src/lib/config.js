@@ -26,8 +26,8 @@ export const MODELS = [
     vision: false,
   },
   {
-    id: env.VITE_VISION_MODEL || 'richardyoung/smolvlm2-2.2b-instruct',
-    label: 'SmolVLM2 2.2B',
+    id: env.VITE_VISION_MODEL || 'llama3.2-vision',
+    label: 'Llama 3.2 Vision',
     role: 'Multimodal vision',
     vision: true,
   },
