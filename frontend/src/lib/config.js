@@ -11,7 +11,7 @@ export const APP_NAME = env.VITE_APP_NAME || 'Supermind';
 // The backend base URL. In production this is your Tailscale HTTPS
 // address, e.g. https://raven-laptop.tailnet-xxxx.ts.net
 // (Tailscale Serve fronts the local Node server with a real cert.)
-export const BACKEND_URL = (env.VITE_BACKEND_URL !== undefined ? env.VITE_BACKEND_URL : 'http://localhost:3001').replace(/\/$/, '');
+export const BACKEND_URL = (env.VITE_BACKEND_URL !== undefined ? env.VITE_BACKEND_URL : (env.PROD ? '' : 'http://localhost:3001')).replace(/\/$/, '');
 
 // Must match AUTH_TOKEN on the backend if you set one; else blank.
 export const SUPERMIND_KEY = env.VITE_SUPERMIND_KEY || '';
