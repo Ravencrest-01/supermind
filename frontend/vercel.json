@@ -1,3 +1,8 @@
 {
-  "rewrites": [{ "source": "/((?!api|icons|assets|manifest.webmanifest|sw.js|registerSW.js).*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://component-zipfile-cause.ngrok-free.dev/api/:path*"
+    }
+  ]
 }
