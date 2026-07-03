@@ -57,7 +57,7 @@ export const config = {
     memoriesDir: process.env.MEMORIES_DIR || 'Supermind/Memories',
     memoryHub: process.env.MEMORY_HUB || 'Supermind/Supermind Memory.md',
   },
-  
+
   memoryEnabled: process.env.MEMORY_ENABLED !== 'false',
 
   // Optional shared secret. If set, the frontend must send the same

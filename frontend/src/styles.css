@@ -163,6 +163,7 @@ body {
 }
 .picker__opt--active { background: var(--surface-2); }
 .picker__opt--on { background: var(--accent-soft); }
+.picker__opt--disabled { opacity: 0.4; cursor: not-allowed; }
 .picker__opt-name { font-size: 13.5px; font-weight: 500; }
 .picker__opt-role { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted-2); }
 .tag { font-family: var(--font-mono); font-size: 9.5px; padding: 3px 6px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.03em; }

@@ -21,7 +21,7 @@ export default function ModelSelect({ model, onModelChange, status, disabled }) 
                 {MODELS.map((m) => {
                   const present = installed.some((n) => n === m.id || n.startsWith(m.id.split(':')[0]));
                   return (
-                    <Listbox.Option key={m.id} value={m.id} as="button" className={({ active, selected }) => `picker__opt ${selected ? 'picker__opt--on' : ''} ${active && !selected ? 'picker__opt--active' : ''}`}>
+                    <Listbox.Option key={m.id} value={m.id} disabled={m.disabled} as="button" className={({ active, selected, disabled }) => `picker__opt ${selected ? 'picker__opt--on' : ''} ${active && !selected && !disabled ? 'picker__opt--active' : ''} ${disabled ? 'picker__opt--disabled' : ''}`}>
                       {({ selected, active }) => (
                         <>
                           <div style={{ textAlign: 'left' }}>

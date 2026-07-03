@@ -30,6 +30,7 @@ export const MODELS = [
     label: 'Qwen 2.5 VL 3B',
     role: 'Multimodal vision',
     vision: true,
+    disabled: true,
   },
 ];
 
