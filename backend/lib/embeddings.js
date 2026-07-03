@@ -119,9 +119,7 @@ export async function buildIndex({ force = false } = {}) {
 
 async function ensureLoaded() {
   if (state.loaded) return;
-  const cached = await loadCache();
-  if (cached.length) { state.chunks = cached; state.loaded = true; }
-  else await buildIndex();
+  await buildIndex();
 }
 
 // Semantic search → best chunk per note, sorted by score.

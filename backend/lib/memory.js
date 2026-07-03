@@ -3,6 +3,7 @@ import path from 'node:path';
 import { config } from '../config.js';
 import { ensureVault } from './vault.js';
 import { streamChat } from './ollama.js';
+import { buildIndex } from './embeddings.js';
 
 export async function extractMemory(convo, userMessage) {
   if (!config.memoryEnabled) return;
@@ -77,6 +78,9 @@ ${tagsLine}
 
     // Append link to Hub Note
     await fs.appendFile(hubPath, `\n- [[${safeTitle}]]`, 'utf8');
+
+    // Automatically rebuild the index so the new memory is immediately retrievable
+    await buildIndex();
 
   } catch (error) {
     console.error('Supermemory extraction failed:', error);
