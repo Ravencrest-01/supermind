@@ -18,6 +18,9 @@ Run this from the project root (`d:\supermind`) to launch the tunnel invisibly u
 pm2 start start-ngrok.bat --name "supermind-tunnel" --interpreter cmd
 ```
 
+### 3. Configure the URL in Frontend
+run this command in terminal: ngrok http --url=https://component-zipfile-cause.ngrok-free.dev 3001
+
 ---
 
 ## 🛠️ Managing and Monitoring (Daily Use)
