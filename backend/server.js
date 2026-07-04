@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import multer from 'multer';
+import EventEmitter from 'node:events';
 import { config } from './config.js';
 import {
   ensureVault,
@@ -17,6 +19,11 @@ import { streamChat, nodeStatus } from './lib/ollama.js';
 import { getChatInitContext } from './lib/retrieval.js';
 import { buildIndex, indexStats } from './lib/embeddings.js';
 import { finalizeConversation } from './lib/finalize.js';
+import { ingestFile } from './lib/ingestion.js';
+import { auditFilesystem } from './lib/audit.js';
+
+const upload = multer({ dest: 'uploads/' });
+const logEmitter = new EventEmitter();
 
 const app = express();
 app.use(express.json({ limit: '25mb' })); // room for base64 images
@@ -100,6 +107,41 @@ app.get('/api/index', (_req, res) => res.json(indexStats()));
 app.post('/api/reindex', async (_req, res) => {
   const count = await buildIndex({ force: true });
   res.json({ ok: true, chunks: count });
+});
+
+// ── Ingestion & Audit ──────────────────────────────────────────
+app.post('/api/ingest', upload.array('files'), async (req, res) => {
+  const workspace = req.body.workspace;
+  const files = req.files || [];
+  
+  if (!files.length) return res.status(400).json({ error: 'No files provided' });
+
+  res.json({ ok: true, message: `Queued ${files.length} files for ingestion.` });
+
+  for (const file of files) {
+    ingestFile(file, workspace, (evt, data) => logEmitter.emit(evt, data)).catch(console.error);
+  }
+});
+
+app.get('/api/audit', async (req, res) => {
+  const auditResult = await auditFilesystem();
+  res.json(auditResult);
+});
+
+app.get('/api/logs', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  const listener = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  logEmitter.on('log', listener);
+  req.on('close', () => {
+    logEmitter.off('log', listener);
+  });
 });
 
 // ── Chat (Server-Sent Events stream) ───────────────────────────
