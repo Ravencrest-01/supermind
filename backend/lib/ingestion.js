@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import pdfParse from 'pdf-parse';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
 import { embed, chatOnce } from './ollama.js';
 import { config } from '../config.js';
 

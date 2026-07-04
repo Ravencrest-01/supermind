@@ -194,7 +194,8 @@ app.post('/api/chat', async (req, res) => {
   const coreMemory = await readCoreMemory(convo.activeMemoryTag);
   const systemPrompt =
     `You are a synchronized extension of the user's mind — their private "Supermind". ` +
-    `Use the following Core Memory to ground your awareness. Be concise and direct.\n\n` +
+    `Use the following Core Memory to ground your awareness. Be concise and direct. ` +
+    `CRITICAL INSTRUCTION: Do NOT hallucinate or make up any data. Only use the provided memory and context. If you do not know the answer based on the provided data, explicitly state that you do not know.\n\n` +
     `<core_memory>\n${coreMemory}\n</core_memory>` +
     (convo.vaultContext ? `\n\n${convo.vaultContext}` : '');
 

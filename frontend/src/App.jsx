@@ -3,8 +3,6 @@ import Sidebar from './components/Sidebar.jsx';
 import Topbar from './components/Topbar.jsx';
 import Messages from './components/Messages.jsx';
 import Composer from './components/Composer.jsx';
-import AssetCapture from './components/AssetCapture.jsx';
-import AuditPanel from './components/AuditPanel.jsx';
 import { api } from './lib/api.js';
 import { APP_NAME, DEFAULT_MODEL, MODELS, BACKEND_URL } from './lib/config.js';
 
@@ -18,7 +16,6 @@ export default function App() {
   const [swapping, setSwapping] = useState(false);
   const [streamingId, setStreamingId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [assetsOpen, setAssetsOpen] = useState(false);
   const [error, setError] = useState(null);
   const abortRef = useRef(null);
 
@@ -159,7 +156,6 @@ export default function App() {
           onModelChange={setModel}
           status={status}
           onMenu={() => setSidebarOpen(true)}
-          onToggleAssets={() => setAssetsOpen(!assetsOpen)}
           disabled={busy}
         />
 
@@ -172,53 +168,40 @@ export default function App() {
           </div>
         )}
 
-        {assetsOpen ? (
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <div style={{ flex: '0 0 auto' }}>
-              <AssetCapture />
+        <div className="stage">
+          {empty ? (
+            <div className="hello">
+              <div className="hello__mark">
+                <span className={`led ${status?.online ? 'led--on' : 'led--off'}`} />
+              </div>
+              <h1 className="hello__title">{APP_NAME}</h1>
+              <p className="hello__sub">
+                Your private cognitive extension, running on your own metal.
+              </p>
+              <div className="hello__chips">
+                <span>grounded in your Obsidian vault</span>
+                <span>no cloud · no telemetry</span>
+                <span>4K context, VRAM-safe</span>
+              </div>
             </div>
-            <div style={{ flex: '1 1 auto', overflow: 'hidden' }}>
-              <AuditPanel />
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="stage">
-              {empty ? (
-                <div className="hello">
-                  <div className="hello__mark">
-                    <span className={`led ${status?.online ? 'led--on' : 'led--off'}`} />
-                  </div>
-                  <h1 className="hello__title">{APP_NAME}</h1>
-                  <p className="hello__sub">
-                    Your private cognitive extension, running on your own metal.
-                  </p>
-                  <div className="hello__chips">
-                    <span>grounded in your Obsidian vault</span>
-                    <span>no cloud · no telemetry</span>
-                    <span>4K context, VRAM-safe</span>
-                  </div>
-                </div>
-              ) : (
-                <Messages messages={messages} streamingId={streamingId} />
-              )}
+          ) : (
+            <Messages messages={messages} streamingId={streamingId} />
+          )}
 
-              {swapping && (
-                <div className="swap">
-                  <div className="swap__pulse" />
-                  <span>Flashing weights into VRAM… reallocating GPU layers</span>
-                </div>
-              )}
+          {swapping && (
+            <div className="swap">
+              <div className="swap__pulse" />
+              <span>Flashing weights into VRAM… reallocating GPU layers</span>
             </div>
+          )}
+        </div>
 
-            <Composer
-              onSend={send}
-              onStop={stop}
-              busy={busy}
-              visionEnabled={visionEnabled}
-            />
-          </>
-        )}
+        <Composer
+          onSend={send}
+          onStop={stop}
+          busy={busy}
+          visionEnabled={visionEnabled}
+        />
       </main>
     </div>
   );

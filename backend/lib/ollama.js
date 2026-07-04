@@ -53,7 +53,7 @@ export async function streamChat({ model, messages, onToken, onSwap, signal }) {
       model,
       messages,
       stream: true,
-      options: { num_ctx: config.numCtx },
+      options: { num_ctx: config.numCtx, temperature: 0.1 },
     }),
     signal,
   });
