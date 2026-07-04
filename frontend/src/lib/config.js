@@ -20,15 +20,15 @@ export const SUPERMIND_KEY = env.VITE_SUPERMIND_KEY || '';
 // name in `ollama list`. `vision: true` unlocks image upload.
 export const MODELS = [
   {
-    id: env.VITE_TEXT_MODEL || 'qwen2.5:7b',
-    label: 'Qwen 2.5 7B',
-    role: 'Deep text logic',
+    id: 'huihui_ai/qwen3.5-abliterated:4B',
+    label: 'Qwen 3.5 Abliterated 4B',
+    role: 'Main reasoning model',
     vision: false,
   },
   {
-    id: 'huihui_ai/qwen3.5-abliterated:4B',
-    label: 'Qwen 3.5 Abliterated 4B',
-    role: 'Uncensored text logic',
+    id: env.VITE_TEXT_MODEL || 'qwen2.5:7b',
+    label: 'Qwen 2.5 7B',
+    role: 'Deep text logic',
     vision: false,
   },
 ];
