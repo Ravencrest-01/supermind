@@ -30,12 +30,21 @@ body {
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .mono { font-family: var(--font-mono); }
 
 .app { 
   display: flex; 
-  height: 100dvh; 
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
   padding-top: env(safe-area-inset-top, 0px);
   padding-right: env(safe-area-inset-right, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
