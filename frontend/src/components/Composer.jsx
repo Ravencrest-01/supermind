@@ -1,43 +1,36 @@
-import { useRef, useState } from 'react';
-import { fileToBase64 } from '../lib/api.js';
+import { useRef, useState, useEffect } from 'react';
 
-export default function Composer({ onSend, onStop, busy, visionEnabled }) {
+export default function Composer({ onSend, onStop, busy }) {
   const [text, setText] = useState('');
-  const [images, setImages] = useState([]); // base64 strings
   const [rememberActive, setRememberActive] = useState(false);
   const taRef = useRef(null);
-  const fileRef = useRef(null);
 
   const grow = (el) => {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 200) + 'px';
   };
 
-  const pickImages = async (e) => {
-    const files = [...e.target.files];
-    const b64s = await Promise.all(files.map(fileToBase64));
-    setImages((prev) => [...prev, ...b64s].slice(0, 4));
-    e.target.value = '';
-  };
+
 
   const send = () => {
     if (busy) return;
     let t = text.trim();
-    if (!t && images.length === 0) return;
+    if (!t) return;
     
     if (rememberActive) {
       t = `Remember this:\n${t}`;
       setRememberActive(false);
     }
     
-    onSend(t, images);
+    onSend(t, []); // Send empty images array since vision is removed
     setText('');
-    setImages([]);
     if (taRef.current) taRef.current.style.height = 'auto';
   };
 
   const onKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
+      // If mobile layout, do not auto-send on enter (let it insert newline)
+      if (window.innerWidth <= 820) return;
       e.preventDefault();
       send();
     }
@@ -45,16 +38,6 @@ export default function Composer({ onSend, onStop, busy, visionEnabled }) {
 
   return (
     <div className="composer">
-      {images.length > 0 && (
-        <div className="composer__thumbs">
-          {images.map((b64, i) => (
-            <div key={i} className="thumb">
-              <img src={`data:image/*;base64,${b64}`} alt="" />
-              <button onClick={() => setImages(images.filter((_, x) => x !== i))}>×</button>
-            </div>
-          ))}
-        </div>
-      )}
       <div className="composer__bar">
         <button
           className={`iconbtn ${rememberActive ? 'active' : ''}`}
@@ -66,33 +49,11 @@ export default function Composer({ onSend, onStop, busy, visionEnabled }) {
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
           </svg>
         </button>
-        {visionEnabled && (
-          <>
-            <button
-              className="iconbtn"
-              title="Attach image"
-              onClick={() => fileRef.current?.click()}
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <rect x="3" y="3" width="18" height="18" rx="3" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <path d="M21 15l-5-5L5 21" />
-              </svg>
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              multiple
-              hidden
-              onChange={pickImages}
-            />
-          </>
-        )}
+
         <textarea
           ref={taRef}
           className="composer__input"
-          placeholder={visionEnabled ? 'Ask, or drop an image…' : 'Message your Supermind…'}
+          placeholder="Message your Supermind…"
           value={text}
           rows={1}
           onChange={(e) => {

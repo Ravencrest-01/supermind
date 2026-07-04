@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { config } from '../config.js';
 import { ensureVault } from './vault.js';
-import { streamChat } from './ollama.js';
+import { chatOnce } from './ollama.js';
 import { buildIndex } from './embeddings.js';
 
 export async function extractMemory(convo, userMessage) {
@@ -22,21 +22,34 @@ export async function extractMemory(convo, userMessage) {
     const hubPath = path.join(config.vaultPath, config.files.memoryHub);
 
     // Call LLM to extract tags and summary
-    const prompt = `Extract a brief title, 3-5 tags, and a summary of the following important information to remember.\n\n` +
-      `Important info: "${userMessage.content}"\n\n` +
-      `Output JSON format strictly:\n{"title": "Brief Title", "tags": ["tag1", "tag2"], "summary": "Detailed summary"}`;
+    const prompt = `You are a memory extraction system. Your task is to extract a brief title, 3-5 tags, and a summary from the following important information.
+    
+Important info: "${userMessage.content}"
 
-    const rawResponse = await streamChat({
-      model: config.models.text,
-      messages: [{ role: 'user', content: prompt }],
-      onToken: () => {},
-    });
+You MUST respond ONLY with a valid JSON object matching this exact schema:
+{
+  "title": "A short, descriptive title",
+  "tags": ["tag1", "tag2", "tag3"],
+  "summary": "A clear, concise summary of the information"
+}`;
 
     let extracted;
     try {
-      const match = rawResponse.match(/\{[\s\S]*\}/);
-      extracted = JSON.parse(match ? match[0] : rawResponse);
-    } catch {
+      const rawResponse = await chatOnce({
+        model: config.models.text,
+        messages: [{ role: 'user', content: prompt }],
+        format: 'json',
+        temperature: 0.1,
+      });
+
+      extracted = JSON.parse(rawResponse);
+      
+      // Basic validation
+      if (!extracted.title || !extracted.tags || !extracted.summary) {
+        throw new Error('Missing required fields in JSON response');
+      }
+    } catch (error) {
+      console.error('[Memory] Failed to extract or parse JSON from model:', error.message);
       // Fallback
       extracted = {
         title: userMessage.content.slice(0, 30).trim() + '...',
@@ -79,9 +92,8 @@ ${tagsLine}
     // Append link to Hub Note
     await fs.appendFile(hubPath, `\n- [[${safeTitle}]]`, 'utf8');
 
-    // Automatically rebuild the index so the new memory is immediately retrievable
-    await buildIndex();
-
+    // Removed buildIndex() to prevent swapping to the embedding model mid-conversation.
+    // Index will be rebuilt on server boot or manual reindex.
   } catch (error) {
     console.error('Supermemory extraction failed:', error);
   }
